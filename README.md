@@ -1,5 +1,5 @@
 # GXC Token smart contracts
-## forked from MVL Token
+
 ### GXC Token
 
 GXC Token is ERC-20 token conforms following ERC-20 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
@@ -55,3 +55,4 @@ $ yarn install --frozen-lockfile --production=false
 ```
 $ truffle test
 ```
+- forked from MVL Token
