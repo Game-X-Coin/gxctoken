@@ -1,5 +1,5 @@
-const MVLToken = artifacts.require("MVLToken");
+const GXCToken = artifacts.require("GXCToken");
 
 module.exports = function(deployer) {
-  return deployer.deploy(MVLToken);
+  return deployer.deploy(GXCToken);
 };

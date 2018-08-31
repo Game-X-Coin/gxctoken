@@ -163,18 +163,18 @@ contract TokenLock is Ownable {
   }
 }
 
-contract MVLToken is BurnableToken, DetailedERC20, ERC20Token, TokenLock {
+contract GXCToken is BurnableToken, DetailedERC20, ERC20Token, TokenLock {
   using SafeMath for uint256;
-  uint256 public DISTRIBUTE_DATE = 1527768000; // 2018-05-31T21:00:00+09:00
+  uint256 public DISTRIBUTE_DATE = 1536969600; // 2018-09-15T00:00:00+00:00
 
   // events
   event Approval(address indexed owner, address indexed spender, uint256 value);
   event UpdatedBlockingState(address indexed to, uint256 start_time, uint256 step_time, uint256 unlock_step, uint256 value);
 
-  string public constant symbol = "MVL";
-  string public constant name = "Mass Vehicle Ledger Token";
+  string public constant symbol = "GXC";
+  string public constant name = "Game X Coin";
   uint8 public constant decimals = 18;
-  uint256 public constant TOTAL_SUPPLY = 3*(10**10)*(10**uint256(decimals));
+  uint256 public constant TOTAL_SUPPLY = 1*(10**9)*(10**uint256(decimals));
 
   constructor() DetailedERC20(name, symbol, decimals) public {
     _totalSupply = TOTAL_SUPPLY;
@@ -246,5 +246,8 @@ contract MVLToken is BurnableToken, DetailedERC20, ERC20Token, TokenLock {
 
   function() public payable { // don't send eth directly to token contract
     revert();
+  }
+  function test() public view returns(uint, uint) {
+    return (block.timestamp, block.number);
   }
 }

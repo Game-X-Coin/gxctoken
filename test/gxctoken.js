@@ -8,33 +8,34 @@ const moment = require('moment');
 chai.use(chaiAsPromised);
 chai.should();
 
-const MVLToken = artifacts.require("MVLToken");
+const GXCToken = artifacts.require("GXCToken");
 const SafeMathMock = artifacts.require('SafeMathMock');
-
-contract('MVLToken', (accounts) => {
+const TOTAL_SUPPLY = web3.toBigNumber(1e27);
+contract('GXCToken', (accounts) => {
   let token, safeMath;
   before(async () => {
-    token = await MVLToken.deployed();
+    token = await GXCToken.deployed();
     safeMath = await SafeMathMock.new();
     await token.enableTransfer(true);
   });
 
   describe('basic info', () => {
-    it("should put 3e28 MVL to the first account", async () => {
+    it("should put 1e27 GXC to the first account", async () => {
       const balance = await token.balanceOf.call(accounts[0]);
-      balance.equals(web3.toBigNumber(3e28)).should.be.true;
+      console.log(balance);
+      balance.equals(TOTAL_SUPPLY).should.be.true;
     });
 
     it("check name and symbol", async () => {
       const name = await token.name();
-      name.should.equal('Mass Vehicle Ledger Token');
+      name.should.equal('Game X Coin');
       const sym = await token.symbol();
-      sym.should.equal('MVL');
+      sym.should.equal('GXC');
     });
 
-    it("should have total supply of 3e28", async () => {
+    it("should have total supply of 1e27", async () => {
       const sppl = await token.totalSupply();
-      sppl.equals(web3.toBigNumber(3e28)).should.be.true;
+      sppl.equals(TOTAL_SUPPLY).should.be.true;
     });
   });
 
@@ -46,7 +47,7 @@ contract('MVLToken', (accounts) => {
       let acc1balance, acc2balance;
       let acc1balanceAfter, acc2balanceAfter;
 
-      const token = await MVLToken.deployed();
+      const token = await GXCToken.deployed();
       acc1balance = await token.balanceOf.call(acc1);
       acc2balance = await token.balanceOf.call(acc2);
       await token.transfer(acc2, amount, {from: acc1});
@@ -80,12 +81,11 @@ contract('MVLToken', (accounts) => {
       const acc2 = accounts[3];
       const amount = 1e18;
 
-      token = await MVLToken.deployed();
+      token = await GXCToken.deployed();
       await token.transfer(acc2, amount, {from: acc1}).should.be.rejectedWith(Error);
     });
 
     it("can't transfer before official release date if not owner", async () => {
-      const DISTRIBUTE_DATE = 1527768000; // 2018-05-31T21:00:00+09:00
 
       const aaa = await token.DISTRIBUTE_DATE();
       console.log('distribute', aaa.toString());
@@ -94,7 +94,7 @@ contract('MVLToken', (accounts) => {
 
       const from = accounts[1];
       const to = accounts[2];
-      const amount = web3.toWei(1, 'ether'); // 1 MVL (1e18)
+      const amount = web3.toWei(1, 'ether'); // 1 GXC (1e18)
       const aa = await token.balanceOf(from);
       console.log(aa.minus(amount).toString());
 
@@ -104,7 +104,7 @@ contract('MVLToken', (accounts) => {
     it("can transfer before official release date if owner", async () => {
       const from = accounts[0];
       const to = accounts[3];
-      const amount = web3.toWei(200, 'ether'); // 200 MVL
+      const amount = web3.toWei(200, 'ether'); // 200 GXC
 
       await token.transfer(to, amount, {from});
       const balance = await token.balanceOf.call(to);
@@ -116,14 +116,14 @@ contract('MVLToken', (accounts) => {
     let allowance;
     it("should approve certain amount", async () => {
       // proceed time after distribute date
-      const DISTRIBUTE_DATE = 1527768000;
+      const DISTRIBUTE_DATE = 1536969600;
       await proceedTime(moment.unix(DISTRIBUTE_DATE + 1));
       // setup token amount
       await token.transfer(accounts[1], web3.toBigNumber(web3.toWei(1000000, 'ether')), {from: accounts[0]});
 
       const from = accounts[1];
       const spender = accounts[2];
-      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil MVL
+      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil GXC
       await token.approve(spender, amount, {from});
       allowance = await token.allowance(from, spender);
       console.log(allowance, allowance.toString());
@@ -139,7 +139,7 @@ contract('MVLToken', (accounts) => {
       allowance.equals(web3.toBigNumber(0)).should.be.true;
 
       // restore
-      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil MVL
+      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil GXC
       await token.approve(spender, amount, {from});
       allowance = await token.allowance(from, spender);
       allowance.equals(amount).should.be.true;
@@ -148,14 +148,14 @@ contract('MVLToken', (accounts) => {
     it("shouldn't accept re-call approve function if it is already set", async () => {
       const from = accounts[1];
       const spender = accounts[2];
-      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil MVL
+      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil GXC
       await token.approve(spender, amount, {from}).should.be.rejectedWith(Error);
     });
 
     it("should increase allowance", async () => {
       const from = accounts[1];
       const spender = accounts[2];
-      const increase = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil MVL
+      const increase = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil GXC
       await token.increaseApproval(spender, increase, {from});
       allowance = await token.allowance(from, spender);
       allowance.equals(web3.toBigNumber(1e24)).should.be.true; // allowance should be 1mil
@@ -164,7 +164,8 @@ contract('MVLToken', (accounts) => {
     it("should decrease allowance", async () => {
       const from = accounts[1];
       const spender = accounts[2];
-      const increase = web3.toBigNumber(web3.toWei(300000, 'ether')); // 0.3mil MVL
+      allowance = await token.allowance(from, spender);
+      const increase = web3.toBigNumber(web3.toWei(300000, 'ether')); // 0.3mil GXC
       await token.decreaseApproval(spender, increase, {from});
       allowance = await token.allowance(from, spender);
       allowance.equals(web3.toBigNumber(7e23)).should.be.true; // allowance should be 0.7mil
@@ -182,14 +183,16 @@ contract('MVLToken', (accounts) => {
       const to = accounts[7];
 
       // get original balances
+      console.log(from);
+      console.log("from", from);
       const oldBalances = [];
       await Promise.all([from, spender, to].map(async (acc, i) => {
         const balance = await token.balanceOf.call(acc);
         oldBalances[i] = balance;
       }));
-
+      console.log("oldBalances", oldBalances);
       // delegate transfer
-      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil MVL
+      const amount = web3.toBigNumber(web3.toWei(500000, 'ether')); // 0.5mil GXC
       await token.transferFrom(from, to, amount, {from: spender});
 
       // check balances again
@@ -199,6 +202,7 @@ contract('MVLToken', (accounts) => {
         newBalances[i] = balance;
       }));
 
+      console.log("oldBalances", oldBalances);
       (oldBalances[0].sub(newBalances[0])).equals(amount).should.be.true;
       (newBalances[2].sub(oldBalances[2])).equals(amount).should.be.true;
       oldBalances[1].equals(newBalances[1]).should.be.true;
@@ -210,7 +214,7 @@ contract('MVLToken', (accounts) => {
       const spender = accounts[2];
       const to = accounts[7];
 
-      const amount = web3.toBigNumber(web3.toWei(700000, 'ether')); // 0.7mil MVL
+      const amount = web3.toBigNumber(web3.toWei(700000, 'ether')); // 0.7mil GXC
       await token.transferFrom(from, to, amount, {from: spender}).should.be.rejectedWith(Error);
     });
 
@@ -227,7 +231,7 @@ contract('MVLToken', (accounts) => {
       }));
 
       // delegate transfer
-      const amount = web3.toBigNumber(web3.toWei(200000, 'ether')); // 0.2mil MVL
+      const amount = web3.toBigNumber(web3.toWei(200000, 'ether')); // 0.2mil GXC
       await token.transferFrom(from, to, amount, {from: spender});
 
       // check balances again
@@ -245,7 +249,7 @@ contract('MVLToken', (accounts) => {
     it("should decrease value more than allowance for setting it to zero", async () => {
       const from = accounts[1];
       const spender = accounts[2];
-      const decrease = web3.toBigNumber(web3.toWei(300000000, 'ether')); // 300mil MVL
+      const decrease = web3.toBigNumber(web3.toWei(300000000, 'ether')); // 300mil GXC
       await token.decreaseApproval(spender, decrease, {from});
       allowance = await token.allowance(from, spender);
       allowance.equals(web3.toBigNumber(0)).should.be.true; // allowance should be 0
@@ -263,7 +267,7 @@ contract('MVLToken', (accounts) => {
     it("should be able to set another spender", async () => {
       const from = accounts[1];
       const spender = accounts[4];
-      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 MVL
+      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 GXC
       await token.approve(spender, amount, {from});
       allowance = await token.allowance(from, spender);
       console.log(allowance, allowance.toString());
@@ -283,7 +287,7 @@ contract('MVLToken', (accounts) => {
       }));
 
       // delegate transfer
-      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 MVL
+      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 GXC
       await token.transferFrom(from, to, amount, {from: spender});
 
       // check balances again
@@ -308,7 +312,7 @@ contract('MVLToken', (accounts) => {
       const to = accounts[7];
 
       // delegate transfer
-      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 MVL
+      const amount = web3.toBigNumber(web3.toWei(10000, 'ether')); // 10000 GXC
       await token.transferFrom(from, to, amount, {from: spender}).should.be.rejectedWith(Error);
     });
   });
@@ -318,25 +322,24 @@ contract('MVLToken', (accounts) => {
     /* Bonus lock test 1 */
     /*********************/
     it("should setup the lock policy", async () => {
-      // for each month, 25% vesting
       const beneficiary = accounts[3];
-
-      // const lockAmount = web3.toWei(100, 'ether'); // 100 MVL (1e20)
-      // const startTime = moment.parseZone('2018-07-01T00:00:00+00:00').unix();
-      // const stepTime = moment.duration(1, 'month')/1000; // in sec
-      // const unlockStep = 4;
-      // await token.setTokenLockPolicy(beneficiary, lockAmount, startTime, stepTime, unlockStep, {from: accounts[0]});
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-07-01T00:00:00+00:00').unix());
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-07-31T00:00:00+00:00').unix());
+      const balance = await token.balanceOf.call(beneficiary);
+      console.log('hi');
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-10-01T00:00:00+00:00').unix());
+      console.log('hi');
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-10-31T00:00:00+00:00').unix());
       // add Sep's token lock ahead of Aug. For testing latestReleaseTime update
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-09-29T00:00:00+00:00').unix());
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-08-30T00:00:00+00:00').unix());
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-30T00:00:00+00:00').unix());
+      console.log('hi');
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-15T00:00:00+00:00').unix());
+      console.log('hi');
 
       const locked = await token.getMinLockedAmount(beneficiary);
+      console.log('locked', locked);
       locked.equals(web3.toBigNumber(100e18)).should.be.true;
 
       // time warp after release date
-      await proceedTime(moment.parseZone('2018-06-01T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-09-15T01:00:00+00:00'));
 
     });
 
@@ -347,27 +350,29 @@ contract('MVLToken', (accounts) => {
     });
 
     it("cannot set the lock for 0 addr", async () => {
-      await token.addTokenLock(0x0, 25, moment.parseZone('2018-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(0x0, 25, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("cannot set the lock 0", async () => {
       const account = accounts[4];
-      await token.addTokenLock(account, 0, moment.parseZone('2018-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(account, 0, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("cannot set the past lock", async () => {
       const account = accounts[4];
-      await token.addTokenLock(account, 1, moment.parseZone('2018-05-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(account, 1, moment.parseZone('2017-05-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("block set token lock policy for unauthorized user", async () => {
-      await token.addTokenLock(accounts[5], 25, moment.parseZone('2018-07-01T00:00:00+00:00').unix(), {from: accounts[3]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(accounts[5], 25, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[3]}).should.be.rejectedWith(Error);
     });
 
     it("should not be able to transfer token including bonus", async () => {
       const from = accounts[3];
       const to = accounts[4];
-      // 10 MVL was bonus
+      // 100 GXC was locked in previous step.
+      // console.log("balance123", await token.balanceOf(from));
+      // console.log(await token.getMinLockedAmount(from));
       const amount = web3.toWei(110, 'ether');
       await token.transfer(to, amount, {from}).should.be.rejectedWith(Error);
     });
@@ -376,8 +381,7 @@ contract('MVLToken', (accounts) => {
       const from = accounts[3];
       const to = accounts[4];
 
-      // 10 mvl was bonus
-      const amount = web3.toWei(90, 'ether'); // 90MVL
+      const amount = web3.toWei(90, 'ether'); // 90GXC
       await token.transfer(to, amount, {from});
 
       const balance1 = await token.balanceOf.call(from);
@@ -389,13 +393,13 @@ contract('MVLToken', (accounts) => {
 
     it("should be able to transfer token when part of it released", async () => {
       // time warp to 1month later
-      await proceedTime(moment.parseZone('2018-07-01T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-10-01T01:00:00+00:00'));
 
       const from = accounts[3];
       const to = accounts[4];
 
-      // 10 mvl was bonus
-      const amount = web3.toWei(20, 'ether'); // 10MVL(no locked) + 10MVL(part of bonus. 25 MVL was released)
+      // 10 GXC was bonus
+      const amount = web3.toWei(20, 'ether'); // 10GXC(no locked) + 10GXC(part of bonus. 25 GXC was released)
       await token.transfer(to, amount, {from});
 
       const balance1 = await token.balanceOf.call(from);
@@ -426,7 +430,7 @@ contract('MVLToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 2", async () => {
       // time warp to 1month later again
-      await proceedTime(moment.parseZone('2018-08-01T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-10-31T01:00:00+00:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -448,7 +452,7 @@ contract('MVLToken', (accounts) => {
       const from = accounts[3];
       const to = accounts[4];
 
-      const amount = 1e18; // 1 MVL
+      const amount = 1e18; // 1 GXC
       await token.transfer(to, amount, {from});
 
       // check balance
@@ -461,7 +465,7 @@ contract('MVLToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 3", async () => {
       // time warp to 1month later again
-      await proceedTime(moment.parseZone('2018-09-01T00:00:01+00:00'));
+      await proceedTime(moment.parseZone('2018-11-15T00:00:01+00:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -483,7 +487,7 @@ contract('MVLToken', (accounts) => {
       const from = accounts[3];
       const to = accounts[4];
 
-      const amount = 29e18; // 29 MVL
+      const amount = 29e18; // 29 GXC
       await token.transfer(to, amount, {from});
 
       // check balance
@@ -497,7 +501,7 @@ contract('MVLToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 3", async () => {
       // time warp to right before all lock released
-      await proceedTime(moment.parseZone('2018-09-28T23:59:00+00:00'));
+      await proceedTime(moment.parseZone('2018-11-29T23:59:00+00:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -517,7 +521,7 @@ contract('MVLToken', (accounts) => {
 
     it("should be able to send all tokens", async () => {
       // time warp to right after all lock released
-      await proceedTime(moment.parseZone('2018-09-29T00:00:01+00:00'));
+      await proceedTime(moment.parseZone('2018-11-30T00:00:01+00:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -538,7 +542,7 @@ contract('MVLToken', (accounts) => {
     /*********************/
     it("should setup the different bonus policy", async () => {
       const beneficiary = accounts[4];
-      const lockAmount = web3.toWei(100, 'ether'); // 100 MVL (1e20)
+      const lockAmount = web3.toWei(100, 'ether'); // 100 GXC (1e20)
       // const startTime = moment.parseZone('2018-10-01T00:00:00+00:00').unix();
       // const stepTime = moment.duration(3, 'month')/1000; // in sec
       // const unlockStep = 1;
@@ -699,13 +703,13 @@ contract('MVLToken', (accounts) => {
     it("should be able to burn", async () => {
       const owner = await token.owner.call();
       let oldOwnerAmount = await token.balanceOf.call(owner);
-      const burnAmount = web3.toBigNumber(web3.toWei(10000000, 'ether')); // 10000000 MVL
+      const burnAmount = web3.toBigNumber(web3.toWei(10000000, 'ether')); // 10000000 GXC
       // console.log(ownerAmount.toString());
       // console.log(burnAmount.toString());
       await token.burn(burnAmount, {from: owner});
 
       const totalSupply = await token.totalSupply();
-      totalSupply.equals(web3.toBigNumber(3e28).minus(burnAmount)).should.be.true;
+      totalSupply.equals(TOTAL_SUPPLY.minus(burnAmount)).should.be.true;
       const ownerAmount = await token.balanceOf.call(owner);
       ownerAmount.equals(oldOwnerAmount.minus(burnAmount)).should.be.true;
     });
@@ -713,7 +717,7 @@ contract('MVLToken', (accounts) => {
     it("shouldn't burn more than the owner has", async () => {
       const owner = await token.owner.call();
       const ownerAmount = await token.balanceOf.call(owner);
-      const burnAmount = ownerAmount.add(web3.toWei(100, 'ether')); // ownerAmount + 100MVL
+      const burnAmount = ownerAmount.add(web3.toWei(100, 'ether')); // ownerAmount + 100GXC
       await token.burn(burnAmount, {from: owner}).should.be.rejectedWith(Error);
     });
   });
@@ -733,7 +737,7 @@ contract('MVLToken', (accounts) => {
       const balance11 = await token.balanceOf.call(owner);
       const balance12 = await token.balanceOf.call(to);
 
-      const amount = web3.toBigNumber(2e27);
+      const amount = web3.toBigNumber(0.9 * 1e27);
       await token.transfer(to, amount, {from: owner});
 
       const balance21 = await token.balanceOf.call(owner);
@@ -773,7 +777,7 @@ contract('MVLToken', (accounts) => {
       // get approved amount
       const allowance = await token.allowance(owner, admin);
       // all amount should be allowed
-      allowance.equals(web3.toBigNumber(3e28)).should.be.true;
+      allowance.equals(TOTAL_SUPPLY).should.be.true;
     });
 
     it("change admin", async () => {
@@ -788,7 +792,7 @@ contract('MVLToken', (accounts) => {
       // get approved amount
       const allowance = await token.allowance(owner, admin);
       // all amount should be allowed
-      allowance.equals(web3.toBigNumber(3e28)).should.be.true;
+      allowance.equals(TOTAL_SUPPLY).should.be.true;
       // old admin is not allowed
       const allowance2 = await token.allowance(owner, oldAdmin);
       allowance2.equals(web3.toBigNumber(0)).should.be.true;
