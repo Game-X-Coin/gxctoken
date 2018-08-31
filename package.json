@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/easi6dev/contracts.git"
+    "url": "git+https://github.com/Game-X-Coin/gxctoken.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/easi6dev/contracts/issues"
+    "url": "https://github.com/Game-X-Coin/gxctoken/issues"
   },
-  "homepage": "https://github.com/easi6dev/contracts#readme",
+  "homepage": "https://github.com/Game-X-Coin/gxctoken#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
     "chai": "^4.1.2",
