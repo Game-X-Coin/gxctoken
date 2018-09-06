@@ -116,7 +116,7 @@ contract('GXCToken', (accounts) => {
     let allowance;
     it("should approve certain amount", async () => {
       // proceed time after distribute date
-      const DISTRIBUTE_DATE = 1536969600;
+      const DISTRIBUTE_DATE = 1538319600;
       await proceedTime(moment.unix(DISTRIBUTE_DATE + 1));
       // setup token amount
       await token.transfer(accounts[1], web3.toBigNumber(web3.toWei(1000000, 'ether')), {from: accounts[0]});
@@ -325,13 +325,13 @@ contract('GXCToken', (accounts) => {
       const beneficiary = accounts[3];
       const balance = await token.balanceOf.call(beneficiary);
       console.log('hi');
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-10-01T00:00:00+00:00').unix());
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-10-15T00:00:00+09:00').unix());
       console.log('hi');
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-10-31T00:00:00+00:00').unix());
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-15T00:00:00+09:00').unix());
       // add Sep's token lock ahead of Aug. For testing latestReleaseTime update
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-30T00:00:00+00:00').unix());
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-12-15T00:00:00+09:00').unix());
       console.log('hi');
-      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-15T00:00:00+00:00').unix());
+      await token.addTokenLock(beneficiary, web3.toWei(25, 'ether'), moment.parseZone('2018-11-30T00:00:00+09:00').unix());
       console.log('hi');
 
       const locked = await token.getMinLockedAmount(beneficiary);
@@ -339,7 +339,7 @@ contract('GXCToken', (accounts) => {
       locked.equals(web3.toBigNumber(100e18)).should.be.true;
 
       // time warp after release date
-      await proceedTime(moment.parseZone('2018-09-15T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-10-01T01:00:00+09:00'));
 
     });
 
@@ -350,21 +350,21 @@ contract('GXCToken', (accounts) => {
     });
 
     it("cannot set the lock for 0 addr", async () => {
-      await token.addTokenLock(0x0, 25, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(0x0, 25, moment.parseZone('2019-07-01T00:00:00+09:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("cannot set the lock 0", async () => {
       const account = accounts[4];
-      await token.addTokenLock(account, 0, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(account, 0, moment.parseZone('2019-07-01T00:00:00+09:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("cannot set the past lock", async () => {
       const account = accounts[4];
-      await token.addTokenLock(account, 1, moment.parseZone('2017-05-01T00:00:00+00:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(account, 1, moment.parseZone('2017-05-01T00:00:00+09:00').unix(), {from: accounts[0]}).should.be.rejectedWith(Error);
     });
 
     it("block set token lock policy for unauthorized user", async () => {
-      await token.addTokenLock(accounts[5], 25, moment.parseZone('2019-07-01T00:00:00+00:00').unix(), {from: accounts[3]}).should.be.rejectedWith(Error);
+      await token.addTokenLock(accounts[5], 25, moment.parseZone('2019-07-01T00:00:00+09:00').unix(), {from: accounts[3]}).should.be.rejectedWith(Error);
     });
 
     it("should not be able to transfer token including bonus", async () => {
@@ -393,7 +393,7 @@ contract('GXCToken', (accounts) => {
 
     it("should be able to transfer token when part of it released", async () => {
       // time warp to 1month later
-      await proceedTime(moment.parseZone('2018-10-01T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-10-15T01:00:00+09:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -430,7 +430,7 @@ contract('GXCToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 2", async () => {
       // time warp to 1month later again
-      await proceedTime(moment.parseZone('2018-10-31T01:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-11-15T01:00:00+09:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -465,7 +465,7 @@ contract('GXCToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 3", async () => {
       // time warp to 1month later again
-      await proceedTime(moment.parseZone('2018-11-15T00:00:01+00:00'));
+      await proceedTime(moment.parseZone('2018-11-30T00:00:01+09:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -501,7 +501,7 @@ contract('GXCToken', (accounts) => {
 
     it("should not be able to transfer more than allowed now 3", async () => {
       // time warp to right before all lock released
-      await proceedTime(moment.parseZone('2018-11-29T23:59:00+00:00'));
+      await proceedTime(moment.parseZone('2018-12-14T23:59:00+09:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -521,7 +521,7 @@ contract('GXCToken', (accounts) => {
 
     it("should be able to send all tokens", async () => {
       // time warp to right after all lock released
-      await proceedTime(moment.parseZone('2018-11-30T00:00:01+00:00'));
+      await proceedTime(moment.parseZone('2018-12-15T00:00:01+09:00'));
 
       const from = accounts[3];
       const to = accounts[4];
@@ -547,11 +547,11 @@ contract('GXCToken', (accounts) => {
       // const stepTime = moment.duration(3, 'month')/1000; // in sec
       // const unlockStep = 1;
       // await token.setTokenLockPolicy(beneficiary, lockAmount, startTime, stepTime, unlockStep, {from: accounts[0]});
-      await token.addTokenLock(beneficiary, lockAmount, moment.parseZone('2018-10-01T00:00:00+00:00').add(moment.duration(3, 'month')/1000, 'seconds').unix());
+      await token.addTokenLock(beneficiary, lockAmount, moment.parseZone('2018-10-01T00:00:00+09:00').add(moment.duration(3, 'month')/1000, 'seconds').unix());
     });
 
     it("should not be able to transfer locked amount before release date", async () => {
-      await proceedTime(moment.parseZone('2018-10-02T00:00:00+00:00'));
+      await proceedTime(moment.parseZone('2018-10-02T00:00:00+09:00'));
       const from = accounts[4];
       const to = accounts[5];
 
@@ -575,7 +575,7 @@ contract('GXCToken', (accounts) => {
     });
 
     it("should be able to transfer all tokens after release time", async () => {
-      await proceedTime(moment.parseZone('2018-12-30T00:00:01+00:00'));
+      await proceedTime(moment.parseZone('2018-12-30T00:00:01+09:00'));
       const from = accounts[4];
       const to = accounts[5];
 
