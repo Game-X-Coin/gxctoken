@@ -165,7 +165,8 @@ contract TokenLock is Ownable {
 
 contract GXCToken is BurnableToken, DetailedERC20, ERC20Token, TokenLock {
   using SafeMath for uint256;
-  uint256 public DISTRIBUTE_DATE = 1536969600; // 2018-09-15T00:00:00+00:00
+  // uint256 public DISTRIBUTE_DATE = 1538319600; // 2018-10-01T00:00:00+09:00
+  uint256 public DISTRIBUTE_DATE = 1536224400; // 2018-09-06T18:00:00+09:00
 
   // events
   event Approval(address indexed owner, address indexed spender, uint256 value);
