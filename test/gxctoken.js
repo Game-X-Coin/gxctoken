@@ -116,7 +116,7 @@ contract('GXCToken', (accounts) => {
     let allowance;
     it("should approve certain amount", async () => {
       // proceed time after distribute date
-      const DISTRIBUTE_DATE = 1538319600;
+      const DISTRIBUTE_DATE = 1536224400;
       await proceedTime(moment.unix(DISTRIBUTE_DATE + 1));
       // setup token amount
       await token.transfer(accounts[1], web3.toBigNumber(web3.toWei(1000000, 'ether')), {from: accounts[0]});
