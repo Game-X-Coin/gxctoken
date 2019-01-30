@@ -69,4 +69,4 @@ build/
 coverage.json
 .Ds_store
 
-data/*.csv
+data/airdrop_result*
