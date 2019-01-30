@@ -1,45 +1,55 @@
-
-// import GXCToken from '../build/contracts/GXCToken.json';
-// import GXCToken from '../build/contracts/GXCToken.json';
-
 const fs = require('fs');
 const Web3 = require('web3');
 const moment = require('moment');
-const airdropInformation = require('./airdrop_information');
-// const HDWalletProvider = require("truffle-hdwallet-provider-privkey");
-
-// const tokenAbi = JSON.parse(fs.readFileSync('./build/contracts/GXCToken.json', 'utf8')).abi;
-
 const GXCToken = artifacts.require("GXCToken");
 
 
 module.exports = async () => {
-    const { from, list, tokenAddress } = airdropInformation;
+  try {
+    console.log('airdrop Start...');
+    const tokenAddress = process.env.GXC_TOKEN_CONTRACT;
+    const from =  process.env.AIRDROP_SOURCE_PUB.toLowerCase();
     const contract = await GXCToken.at(tokenAddress);
-    try {
-        for(let j=0; j<list.length; j++) {
-            const elem = list[j];
-            console.log(elem.address, "start...");
-            const amount = web3.toWei(elem.amount, 'ether'); // 1 GXC (1e18)
-            const res = await contract.transfer(elem.address, amount, {from});
-            for(let i =0; i<elem.locks.length; i++) {
-                const lock = elem.locks[i];
-                console.log(lock);
-                const date = moment.parseZone(lock.date).unix();
-                console.log(date);
-                const res2 = await contract.addTokenLock(elem.address, web3.toWei(lock.amount, 'ether'), date, {from});
-                console.log(res2);
-            }
-            await elem.locks.forEach(async (lock) => {
-            });
-        }
-    } catch (error) {
+    let airdropResult = [];
+    let airdropList = fs.readFileSync('./data/airdrop_list.csv', 'utf8');
+    airdropList = airdropList.split('\n');
+    let results = [];
+    let fromAddress = '';
+    let fromFlag = false;
+    airdropList.fr
+    for(let i=1; i<airdropList.length; i++) {
+      const elem = airdropList[i];
+      let transactionResult = {};
+      const [ address, gxcCount ] = elem.split(',').map(e => e.trim());
+
+      
+      if(fromFlag && fromAddress !==address) {
+        console.log(`skip address : ${address}`);
+        continue;
+      }
+      fromFlag = false;
+      try {
+        console.log(address, "start...");
+        const amount = web3.toWei(gxcCount, 'ether'); // 1 GXC (1e18)
+        const res = await contract.transfer(address, amount, 
+          {from, gas: 4600000, gasPrice: web3.toWei("4", "gwei")});
+        console.log(address, "end...");
+        transactionResult = [address, gxcCount, 'success', res.tx, '', new Date().toISOString().slice(0,19)];
+        console.log(transactionResult);
+        airdropResult.push([address, gxcCount, res.tx]);
+        if(i > 10000) break;
+      } catch (error) {
         console.error(error);
+        transactionResult = [address, gxcCount, 'fail', '', error.message, new Date().toISOString().slice(0,19)];
+      }
+      fs.appendFileSync('./data/airdrop_result.csv', transactionResult.join(',') + '\n');
+        
     }
-    // contract.transfer('0x3Bef926df471001c94eeFce9054c043ae975079B', amount, { from }, function (err, result) {
-    //     console.log(err);
-    //     console.log(result);
-    // });
+    console.log('complete..');
+      // fs.writeFileSync('./airdrop_result.csv', airdropResult.join('\n'));
+  } catch (error) {
+      console.error(error);
+  }
 }
 
 
