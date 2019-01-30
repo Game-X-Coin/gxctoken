@@ -14,9 +14,9 @@ module.exports = async () => {
     let airdropList = fs.readFileSync('./data/airdrop_list.csv', 'utf8');
     airdropList = airdropList.split('\n');
     let results = [];
-    let fromAddress = '';
-    let fromFlag = false;
-    airdropList.fr
+    let fromAddress = process.env.AIRDROP_FROM_ADDRESS;
+    if(!fromAddress) throw('empty fromAddress');
+    let fromFlag = fromAddress ? true : false;
     for(let i=1; i<airdropList.length; i++) {
       const elem = airdropList[i];
       let transactionResult = {};

@@ -28,7 +28,8 @@
     "moment": "^2.22.1",
     "truffle-hdwallet-provider": "^0.0.6",
     "truffle-hdwallet-provider-privkey": "^0.3.0",
-    "truffle-ledger-provider": "^0.0.4"
+    "truffle-ledger-provider": "^0.0.4",
+    "web3-provider-engine": "^14.1.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.1",
