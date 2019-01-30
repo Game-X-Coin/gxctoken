@@ -41,7 +41,11 @@ module.exports = async () => {
         transactionResult = [address, gxcCount, 'fail', '', error.message, new Date().toISOString().slice(0,19)];
       }
       fs.appendFileSync('./data/airdrop_result2.csv', transactionResult.join(',') + '\n');
-        
+      if(parseInt(process.env.AIRDROP_END_ID) === parseInt(id)) {
+        console.log('Reach end of airdrop id: ' + process.env.AIRDROP_END_ID);
+        break;
+      }
+
     }
     console.log('complete..');
       // fs.writeFileSync('./airdrop_result.csv', airdropResult.join('\n'));
