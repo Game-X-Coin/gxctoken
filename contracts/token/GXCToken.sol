@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 import './SafeMath.sol';
 import './ERC20Basic.sol';
@@ -245,7 +245,7 @@ contract GXCToken is BurnableToken, DetailedERC20, ERC20Token, TokenLock {
     return true;
   }
 
-  function() public payable { // don't send eth directly to token contract
+  function() external payable { // don't send eth directly to token contract
     revert();
   }
   function test() public view returns(uint, uint) {
